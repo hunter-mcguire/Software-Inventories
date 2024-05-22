@@ -1,5 +1,8 @@
 import argparse
 import csv
+import os
+import sys
+
 import requests
 
 
@@ -9,6 +12,37 @@ CSV_FIELDS = ('hostname','error')
 PARSER = argparse.ArgumentParser(description='Build Trend Micro Software Inventories')
 API_VERSION = 'v1'
 
+def get_computers(csv_path: str, headers: dict) -> list:
+    computers = []
+    try:
+        with open(csv_path, mode='r') as csv_path:
+            csv_reader = csv.DictReader(csv_path)
+
+            for row in csv_reader:
+                try:
+                    response = requests.post(
+                        url=f'{API_URL}/computers/search',
+                        headers=headers,
+                        params={"expand": "computerStatus"},
+                        json={
+                            'searchCriteria': [
+                                {
+                                    'fieldName': 'hostName',
+                                    'stringTest': 'equal',
+                                    'stringValue': row.get('Hostname')
+                                }
+                            ]
+                        }
+                    ).json().get('computers')[0]
+                    computers.append(response)
+                except Exception as error:
+                    print(error)
+        return computers
+    except Exception as error:
+        print(f"Failed to load computers from: {csv_path}\n")
+        print(f"Error: {error}")
+        sys.exit()
+
 def main() -> None:
     PARSER.add_argument(
         '--apiKey', 
@@ -17,17 +51,38 @@ def main() -> None:
         required=True
     )
 
+    PARSER.add_argument(
+        '--computers_csv', 
+        type=str,
+        help='Path to exported computer list. With hostname included in columns.'
+    )
+
+    PARSER.add_argument(
+        '--all', 
+        action='store_true',
+        help='Create an inventory for all agents.'
+    )
+
     args = PARSER.parse_args()
+    headers={
+        "api-version": "v1",
+        "api-secret-key": args.apiKey
+    }
 
-    computers = requests.get(
-        url=f"{API_URL}/computers",
-        headers={
-            "api-version": "v1",
-            "api-secret-key": args.apiKey
-        },
-        params={"expand": "computerStatus"}
-    ).json().get('computers')
+    if args.all:
+        computers = requests.get(
+            url=f"{API_URL}/computers",
+            headers=headers,
+            params={"expand": "computerStatus"}
+        ).json().get('computers')
+    else:
+        if args.computers_csv:
+            computers = get_computers(args.computers_csv, headers)
+        else:
+            print('Must specific --all or --computers_csv parameter. Not Both')
+            sys.exit()
 
+    
     with open(ERROR_FILE, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=CSV_FIELDS)
         writer.writeheader()
