@@ -1,8 +1,6 @@
 import argparse
 import requests
 
-
-API_URL = "https://workload.us-1.cloudone.trendmicro.com/api"
 API_VERSION = 'v1'
 PARSER = argparse.ArgumentParser(description='Delete All Trend Micro Software Inventories')
 
@@ -13,10 +11,20 @@ def main() -> None:
         help='Provide Trend Vision One API Key',
         required=True
     )
+    
+    PARSER.add_argument(
+        '--region',
+        choices=['us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'],
+        required=True,
+        default='us-1',
+        help="Regions: 'us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'."
+    )
+
     args = PARSER.parse_args()
+    api_url = f"https://workload.{args.region}.cloudone.trendmicro.com/api"
 
     inventories = requests.get(
-        url=f"{API_URL}/softwareinventories",
+        url=f"{api_url}/softwareinventories",
         headers={
             "api-version": API_VERSION,
             "api-secret-key": args.apiKey
@@ -25,7 +33,7 @@ def main() -> None:
 
     for inventory in inventories:
         response = requests.delete(
-            url=f"{API_URL}/softwareinventories/{inventory.get('ID')}",
+            url=f"{api_url}/softwareinventories/{inventory.get('ID')}",
             headers={
                 "api-version": API_VERSION,
                 "api-secret-key": args.apiKey

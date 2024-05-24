@@ -1,12 +1,9 @@
 import argparse
 import csv
-import os
 import sys
 
 import requests
 
-
-API_URL = "https://workload.us-1.cloudone.trendmicro.com/api"
 ERROR_FILE = "software_build_errors.csv"
 CSV_FIELDS = ('hostname','error')
 PARSER = argparse.ArgumentParser(description='Build Trend Micro Software Inventories')
@@ -58,12 +55,22 @@ def main() -> None:
     )
 
     PARSER.add_argument(
+        '--region',
+        choices=['us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'],
+        required=True,
+        default='us-1',
+        help="Regions: 'us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'."
+    )
+
+    PARSER.add_argument(
         '--all', 
         action='store_true',
         help='Create an inventory for all agents.'
     )
 
     args = PARSER.parse_args()
+    api_url = f"https://workload.{args.region}.cloudone.trendmicro.com/api"
+    
     headers={
         "api-version": "v1",
         "api-secret-key": args.apiKey
@@ -71,7 +78,7 @@ def main() -> None:
 
     if args.all:
         computers = requests.get(
-            url=f"{API_URL}/computers",
+            url=f"{api_url}/computers",
             headers=headers,
             params={"expand": "computerStatus"}
         ).json().get('computers')
@@ -89,7 +96,7 @@ def main() -> None:
         for computer in computers:
             hostname = computer.get('hostName')
             build_response = requests.post(
-                url=f"{API_URL}/softwareinventories",
+                url=f"{api_url}/softwareinventories",
                 json={
                     "computerID": computer.get('ID'),
                     "description": computer.get('displayName'),
