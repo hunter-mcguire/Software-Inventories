@@ -21,8 +21,8 @@ python3 -m pip install requests
    It will write any errors to software_build_errors.csv in the directory it is ran in.<br>
 2. **build_inventory_report.py**: <br>This script generates a detailed report based on the inventories created by `build_inventories.py`.<br>
    This while write to software_build_report.csv in the same directory it is ran it.<br>
-3. **nuke_inventories.py**: 
-<br>This script deletes all existing inventories to allow for a fresh start or cleanup.
+3. **delete_inventories.py**: 
+<br>This script deletes software inventories.
 
 ## Usage
 
@@ -39,7 +39,7 @@ Regions:
 * ca-1 
 * sg-1
 
-The build_inventories.py script & build_inventory_report require either the `--all` or `--computers_csv` parameter to build software inventories and reports.
+All 3 scripts require either the `--all` or `--computers_csv` parameter to build software inventories, reports, and handle deletions.
 
 Computers CSV:
 <br>

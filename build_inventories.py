@@ -9,7 +9,7 @@ CSV_FIELDS = ('hostname','error')
 PARSER = argparse.ArgumentParser(description='Build Trend Micro Software Inventories')
 API_VERSION = 'v1'
 
-def get_computers(csv_path: str, headers: dict) -> list:
+def get_computers(api_url: str, csv_path: str, headers: dict) -> list:
     computers = []
     try:
         with open(csv_path, mode='r') as csv_path:
@@ -18,7 +18,7 @@ def get_computers(csv_path: str, headers: dict) -> list:
             for row in csv_reader:
                 try:
                     response = requests.post(
-                        url=f'{API_URL}/computers/search',
+                        url=f'{api_url}/computers/search',
                         headers=headers,
                         params={"expand": "computerStatus"},
                         json={
@@ -57,7 +57,6 @@ def main() -> None:
     PARSER.add_argument(
         '--region',
         choices=['us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'],
-        required=True,
         default='us-1',
         help="Regions: 'us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'."
     )
@@ -84,7 +83,7 @@ def main() -> None:
         ).json().get('computers')
     else:
         if args.computers_csv:
-            computers = get_computers(args.computers_csv, headers)
+            computers = get_computers(api_url, args.computers_csv, headers)
         else:
             print('Must specific --all or --computers_csv parameter. Not Both')
             sys.exit()

@@ -65,7 +65,6 @@ def main() -> None:
     PARSER.add_argument(
         '--region',
         choices=['us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'],
-        required=True,
         default='us-1',
         help="Regions: 'us-1', 'in-1', 'gb-1', 'jp-1', 'de-1', 'au-1', 'ca-1', 'sg-1'."
     )
